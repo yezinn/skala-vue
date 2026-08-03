@@ -14,7 +14,6 @@ const emit = defineEmits(['select-card', 'click-detail'])
 </script>
 
 <template>
-    <!-- <div class="weather-card" @click="emit('select-card', `${cityItem.name}이 선택되었습니다.`)"> -->
     <div class="weather-card" @click="emit('select-card', cityItem.name)">    
         <h4>{{cityItem.name }}</h4>
         <p>현재 기온: {{ cityItem.temp }}°C</p>

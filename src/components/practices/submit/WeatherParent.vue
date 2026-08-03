@@ -33,6 +33,20 @@ watchEffect(() => {
 const showDetail = (cityName, status) => {
   window.alert(`${cityName}의 날씨는 ${status}입니다.`)
 }
+// 한글 받침 여부에 따른 조사 설정
+const getSubjectParticle = (name) => {
+    const lastChar = name.trim().at(-1)
+    const code = lastChar?.charCodeAt(0)
+
+    if (!code || code < 0xac00 || code > 0xd7a3) {
+        return '이'
+    }
+    const hasBatchim = (code - 0xac00) % 28 !== 0
+    return hasBatchim ? '이' : '가'
+}
+const selectCity = (city) => {
+    selectedCityInfo.value = `${city}${getSubjectParticle(city)} 선택되었습니다.`
+}
 </script>
 
 <template>
@@ -43,7 +57,7 @@ const showDetail = (cityName, status) => {
 
         <BaseDashboardCard>
             <h3>📍 지역별 날씨 현황</h3>
-            <WeatherCard v-for="item in filteredWeatherList" :key="item.id" :city-item="item" @select-card="(city) => (selectedCityInfo = `${city}이 선택되었습니다.`)" @click-detail="showDetail" />
+            <WeatherCard v-for="item in filteredWeatherList" :key="item.id" :city-item="item" @select-card="selectCity" @click-detail="showDetail" />
             <p v-if="filteredWeatherList.length === 0" style="text-align: center; color: #e74c3c; padding: 10px">😩 검색 결과와 일치하는 도시가 없습니다.</p>
         </BaseDashboardCard>
     </div>
