@@ -4,6 +4,7 @@
 
 import WeatherFind from './components/practices/submit/WeatherFind.vue'
 import WeatherComposition from './components/practices/submit/WeatherComposition.vue'
+import WeatherParent from './components/practices/submit/WeatherParent.vue'
 // import LifeCycle from './components/practices/basic/LifeCycle.vue'
 </script>
 
@@ -18,7 +19,9 @@ import WeatherComposition from './components/practices/submit/WeatherComposition
     <WeatherComposition />
   </div>
   <div>
-    <!-- <LifeCycle /> -->
+    <h1>🌤️과제 3: 날씨 (Component)</h1>
+    <hr />
+    <WeatherParent />
   </div>
 </template>
 

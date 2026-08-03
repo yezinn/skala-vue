@@ -43,9 +43,7 @@ const showDetail = (cityName, status) => {
 
         <BaseDashboardCard>
             <h3>📍 지역별 날씨 현황</h3>
-
-            <WeatherCard v-for="item in filteredWeatherList" :key="item.id" :city-item="item" @select-card="(msg) => (selectedCityInfo = msg)" @click-detail="showDetail" />
-            
+            <WeatherCard v-for="item in filteredWeatherList" :key="item.id" :city-item="item" @select-card="(city) => (selectedCityInfo = `${city}이 선택되었습니다.`)" @click-detail="showDetail" />
             <p v-if="filteredWeatherList.length === 0" style="text-align: center; color: #e74c3c; padding: 10px">😩 검색 결과와 일치하는 도시가 없습니다.</p>
         </BaseDashboardCard>
     </div>
