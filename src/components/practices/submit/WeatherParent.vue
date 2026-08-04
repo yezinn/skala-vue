@@ -12,6 +12,7 @@ const weatherList = ref([
   {id: 'city_01', name: '서울', temp:28, status:'맑음'},
   {id: 'city_02', name: '부산', temp:30, status:'흐림'},
   {id: 'city_03', name: '대구', temp:24, status:'비'},
+  {id: 'city_04', name: '블라디보스토크', temp:18, status:'흐림'},
 ])
 
 const searchQuery = ref('')

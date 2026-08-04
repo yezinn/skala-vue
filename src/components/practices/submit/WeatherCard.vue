@@ -19,7 +19,9 @@ const emit = defineEmits(['select-card', 'click-detail'])
         <p>현재 기온: {{ cityItem.temp }}°C</p>
 
         <span v-if="cityItem.temp >= 25" class="hot">🥵 더움</span>
+        <span v-else-if="cityItem.temp >= 20" class="moderate">😎 선선함</span>
         <span v-else class="cool">🥶 시원함</span>
+        
 
         <button class="btn-detail" @click.stop="emit('click-detail', cityItem.name, cityItem.status)">상세보기</button>
     </div>
@@ -44,6 +46,9 @@ const emit = defineEmits(['select-card', 'click-detail'])
 }
 .hot {
   background-color: #ff7675;
+}
+.moderate {
+  background-color: #00b894;
 }
 .cool {
   background-color: #74b9ff;
