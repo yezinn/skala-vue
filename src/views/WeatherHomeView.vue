@@ -17,10 +17,10 @@ const router = useRouter()
 const route = useRoute()
 
 const weatherList = ref([
-  {id: 'city_01', name: '서울', temp:28, status:'맑음'},
-  {id: 'city_02', name: '부산', temp:30, status:'흐림'},
-  {id: 'city_03', name: '대구', temp:24, status:'비'},
-  {id: 'city_04', name: '블라디보스토크', temp:18, status:'흐림'},
+  {id: 'city_01', name: '서울', temp:28, status:'맑음', searchKeywords: ['seoul']},
+  {id: 'city_02', name: '부산', temp:30, status:'흐림', searchKeywords: ['busan']},
+  {id: 'city_03', name: '대구', temp:24, status:'비', searchKeywords: ['daegu', 'taegu']},
+  {id: 'city_04', name: '블라디보스토크', temp:18, status:'흐림', searchKeywords: ['vladivostok']},
 ])
 
 const searchQuery = ref('')
@@ -40,9 +40,17 @@ watch(searchQuery, (newQuery) => {
 })
 
 const filteredWeatherList = computed( () => {
-    const query = searchQuery.value.trim()
+    const query = searchQuery.value.trim().toLowerCase()
     if(!query)  return weatherList.value
-    return weatherList.value.filter((item) => item.name.includes(query))
+    // return weatherList.value.filter((item) => item.name.includes(query))
+
+    return weatherList.value.filter((item) => {
+        const matchesKoreanName = item.name.includes(query)
+        const matchesKeyword = item.searchKeywords.some((keyword) =>
+            keyword.includes(query),
+        )
+        return matchesKoreanName || matchesKeyword
+    })
 })
 
 // watch(selectedCityInfo, (newInfo) => {
