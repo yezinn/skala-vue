@@ -22,7 +22,7 @@ const goHome = () => {
     </div>
 </template>
 
-!-- Scoped CSS로 이 컴포넌트에만 스타일 적용 -->
+<!-- Scoped CSS로 이 컴포넌트에만 스타일 적용 -->
 <style scoped>
 .not-found-container {
   display: flex;
