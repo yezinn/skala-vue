@@ -2,26 +2,45 @@
 // import { RouterLink, RouterView } from 'vue-router'
 // import HelloWorld from './components/HelloWorld.vue'
 
-import WeatherFind from './components/practices/submit/WeatherFind.vue'
-import WeatherComposition from './components/practices/submit/WeatherComposition.vue'
-import WeatherParent from './components/practices/submit/WeatherParent.vue'
+import WeatherFind from './components/exercise/WeatherFind.vue'
+import WeatherComposition from './components/exercise/WeatherComposition.vue'
+import WeatherParent from './components/exercise/WeatherParent.vue'
 // import LifeCycle from './components/practices/basic/LifeCycle.vue'
 </script>
 
 
 <template>
-  <div style="padding: 20px">
+  <div class="app-container">
     <!-- <SampleOne /> -->
     <WeatherFind />
   </div>
-  <div style="padding: 20px">
+  <div class="app-container">
     <!-- <SampleTwo /> -->
     <WeatherComposition />
   </div>
-  <div>
+  <div class="app-container">
     <h1>🌤️과제 3: 날씨 (Component)</h1>
     <hr />
     <WeatherParent />
+  </div>
+  <div class="app-container">
+    <h1>🌤️과제 4: 날씨 (Vue Router)</h1>
+    <hr />
+    <div class="dashboard-wrapper">
+      <nav class="navigation-bar">
+        <RouterLink to="/" class="nav-item">🌤️ 날씨 대시보드</RouterLink>
+        <span class="divider">|</span>
+        <RouterLink to="/about" class="nav-item">ℹ 서비스 소개</RouterLink>
+      </nav>
+      <main>
+        <RouterView />
+        <!-- <RouterView v-slot="{ Component }">
+          <KeepAlive>
+            <component :is="Component" />
+          </KeepAlive>
+        </RouterView> -->
+      </main>
+    </div>
   </div>
 </template>
 
