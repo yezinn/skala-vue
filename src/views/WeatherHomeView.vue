@@ -8,6 +8,7 @@
 <script setup>
 import {ref, computed, watch, onMounted} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import axios from 'axios'
 
 import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
 import SearchBar from '../components/exercise/SearchBar.vue'
@@ -16,20 +17,59 @@ import WeatherCard from '../components/exercise/WeatherCard.vue'
 const router = useRouter()
 const route = useRoute()
 
-const weatherList = ref([
-  {id: 'city_01', name: '서울', temp:28, status:'맑음', searchKeywords: ['seoul']},
-  {id: 'city_02', name: '부산', temp:30, status:'흐림', searchKeywords: ['busan']},
-  {id: 'city_03', name: '대구', temp:24, status:'비', searchKeywords: ['daegu', 'taegu']},
-  {id: 'city_04', name: '블라디보스토크', temp:18, status:'흐림', searchKeywords: ['vladivostok']},
-])
-
+const weatherList = ref([])
 const searchQuery = ref('')
 const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
+const isLoading = ref(false)
+
+const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
+const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
+
+const fetchRealTimeWeather = async () => {
+    isLoading.value = true
+    try{
+        const [seoulRes, busanRes, daeguRes] = await Promise.all([
+            axios.get(`${BASE_URL}?q=Seoul&appid=${API_KEY}&units=metric&lang=kr`),
+            axios.get(`${BASE_URL}?q=Busan&appid=${API_KEY}&units=metric&lang=kr`),
+            axios.get(`${BASE_URL}?q=Daegu&appid=${API_KEY}&units=metric&lang=kr`),
+
+        ])
+        weatherList.value = [
+            {
+                id: 'city_01',
+                name: '서울',
+                searchKeywords: ['seoul'],
+                temp: seoulRes.data.main.temp,
+                status: seoulRes.data.weather[0].description,
+            },
+            {
+                id: 'city_02',
+                name: '부산',
+                searchKeywords: ['busan'],
+                temp: busanRes.data.main.temp,
+                status: busanRes.data.weather[0].description,
+            },
+            {
+                id: 'city_03',
+                name: '대구',
+                searchKeywords: ['daegu', 'taegu'],
+                temp: daeguRes.data.main.temp,
+                status: daeguRes.data.weather[0].description,
+            },
+        ]
+        console.log('🟢 [API 통신 완료] 메인 대시보드 실시간 기상 장부 동기화:', weatherList.value)
+    } catch (error){
+        console.error('‼️날씨 API 연동 실패:', error)
+    }finally{
+        isLoading.value = false
+    }
+}
 
 onMounted(() => {
     if(route.query.search){
         searchQuery.value = route.query.search
     }
+    fetchRealTimeWeather()
 })
 
 watch(searchQuery, (newQuery) => {

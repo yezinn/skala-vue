@@ -4,25 +4,66 @@
  <!-- Router 동적 경로 매칭에 해당되는 도시ID (cityId)를 기반으로 Mount 시점에 Mock Data에서 도시 객체 선택 -->
 
 <script setup>
-import {ref, onMounted} from 'vue'
+import {ref,computed, onMounted} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useConfigStore } from '@/stores/configStore'
+import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
+const configStore = useConfigStore()
 
-const mockDetails = {
-    city_01: { name: '대한민국 서울특별시', temp: 28, status: '맑음', humidity: '55%', wind: '2.5m/s' },
-    city_02: { name: '부산광역시 해운대구', temp: 30, status: '비', humidity: '85%', wind: '4.1m/s' },
-    city_03: { name: '대구광역시 수성구', temp: 26, status: '구름', humidity: '65%', wind: '5.0m/s' },
-}
+// const mockDetails = {
+//     city_01: { name: '대한민국 서울특별시', temp: 28, status: '맑음', humidity: '55%', wind: '2.5m/s' },
+//     city_02: { name: '부산광역시 해운대구', temp: 30, status: '비', humidity: '85%', wind: '4.1m/s' },
+//     city_03: { name: '대구광역시 수성구', temp: 26, status: '구름', humidity: '65%', wind: '5.0m/s' },
+// }
 
 const cityData = ref(null)
+const isLoading = ref(false)
+const cityMapping = {
+    city_01: { english: 'Seoul', korean: '대한민국 서울특별시' },
+    city_02: { english: 'Busan', korean: '부산광역시 해운대구' },
+    city_03: { english: 'Daegu', korean: '대구광역시 수성구'},
+}
 
-onMounted(() => {
+onMounted( async () => {
     const id = route.params.cityId
-    if(mockDetails[id]){
-        cityData.value = mockDetails[id]
+    // if(mockDetails[id]){
+    //     cityData.value = mockDetails[id]
+    // }
+    const targetCity = cityMapping[id]
+
+    if(targetCity) {
+        isLoading.value = true
+        try{
+            const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
+            const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${targetCity.english}&appid=${API_KEY}&units=metric&lang=kr`)
+
+            const raw = response.data
+
+            cityData.value = {
+                name: targetCity.korean,
+                temp: raw.main.temp,
+                status: raw.weather[0].description,
+                humidity:  `${raw.main.humidity}%`,
+                wind: `${raw.wind.speed}m/s`,
+            }
+        } catch (error) {
+            console.error('‼️상세 정보 로딩 중 네트워크 에러 발생:', error)
+        } finally {
+            isLoading.value = false
+        }
     }
+})
+
+const displayTemp = computed(() => {
+  if (!cityData.value) return 0
+  const rawTemp = cityData.value.temp // 원본 섭씨 온도
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32) // 화씨 공식 적용
+  }
+  return rawTemp // celsius 상태일 땐 원본 반환
 })
 </script>
 
@@ -33,7 +74,9 @@ onMounted(() => {
 
         <div v-if="cityData" class="info-card">
             <h4>📍 지정 지역: {{ cityData.name }}</h4>
-            <p>실시간 기온: <strong>{{ cityData.temp }}°C</strong></p>
+            <p>
+                실시간 기온: <strong>{{ displayTemp }}{{ configStore.unitSymbol }}</strong>
+            </p>
             <p>기상 현황: {{ cityData.status }}</p>
             <p>대기 습도: {{ cityData.humidity }}</p>
             <p>현재 풍속: {{ cityData.wind }}</p>
