@@ -52,6 +52,9 @@ const actionSuggestion = computed(() => {
     if (weatherId === 800 && feelsLike >= 26) {
         return '😎 자외선이 강할 수 있어요. 선글라스나 자외선 차단제를 챙기세요.'
     }
+    if (feelsLike >= 26) {
+        return '🥵 무더운 날씨에요. 온열 질환에 주의하세요.'
+    }
     return '🙂 오늘은 무난한 날씨예요.'
 })
 </script>
