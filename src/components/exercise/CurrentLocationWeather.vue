@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { storeToRefs as toRefs } from 'pinia'
 import { useWeatherStore } from '@/stores/weather'
 import { useConfigStore } from '@/stores/configStore'
@@ -7,6 +7,20 @@ import { useConfigStore } from '@/stores/configStore'
 const weatherStore = useWeatherStore()
 const { currentLocationWeather, hourlyForecast, isLocationLoading } = toRefs(weatherStore)
 const configStore = useConfigStore()
+
+// 1분마다 현재 시각을 갱신해서, 시간별 예보 중 "지금과 가장 가까운 시간" 강조 표시를 최신 상태로 유지
+const now = ref(Date.now())
+let nowTimer = null
+
+onMounted(() => {
+  nowTimer = setInterval(() => {
+    now.value = Date.now()
+  }, 60000)
+})
+
+onUnmounted(() => {
+  clearInterval(nowTimer)
+})
 
 onMounted(() => {
   if (!navigator.geolocation) {
@@ -31,6 +45,17 @@ const toDisplayTemp = (celsius) => {
   const value = configStore.unit === 'fahrenheit' ? (celsius * 9) / 5 + 32 : celsius
   return Math.round(value)
 }
+
+// 현재 시각과 가장 가까운 시간별 예보 항목의 dt(유닉스 타임스탬프)
+const closestHourlyDt = computed(() => {
+  if (!hourlyForecast.value.length) return null
+
+  return hourlyForecast.value.reduce((closest, item) => {
+    const closestDiff = Math.abs(closest.dt * 1000 - now.value)
+    const itemDiff = Math.abs(item.dt * 1000 - now.value)
+    return itemDiff < closestDiff ? item : closest
+  }).dt
+})
 
 // 오늘의 한 줄 행동 제안
 const actionSuggestion = computed(() => {
@@ -75,7 +100,13 @@ const actionSuggestion = computed(() => {
       </div>
 
       <div class="hourly-list">
-        <div v-for="item in hourlyForecast" :key="item.time" class="hourly-item">
+        <div
+          v-for="item in hourlyForecast"
+          :key="item.time"
+          class="hourly-item"
+          :class="{ 'hourly-item--now': item.dt === closestHourlyDt }"
+        >
+          <span v-if="item.dt === closestHourlyDt" class="hourly-now-badge"></span>
           <span class="hourly-time">{{ item.time }}</span>
           <span class="hourly-temp"
             >{{ toDisplayTemp(item.temp) }}{{ configStore.unitSymbol }}</span
@@ -116,19 +147,36 @@ const actionSuggestion = computed(() => {
 }
 .hourly-list {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  gap: 4px;
 }
 .hourly-item {
-  flex: 0 0 auto;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   background: #fff;
+  border: 1px solid transparent;
   border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 0.85rem;
+  padding: 6px 2px;
+  font-size: 0.72rem;
+}
+.hourly-item--now {
+  border-color: #4b6584;
+  background: #eaf1fb;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(75, 101, 132, 0.25);
+}
+.hourly-now-badge {
+  position: absolute;
+  top: -9px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #4b6584;
+  border-radius: 999px;
 }
 </style>

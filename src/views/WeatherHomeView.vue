@@ -6,7 +6,7 @@
 <!-- router.push('/weather/' + id) -->
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { ElMessage } from 'element-plus'
@@ -19,7 +19,7 @@ import WeatherCard from '../components/exercise/WeatherCard.vue'
 import CurrentLocationWeather from '@/components/exercise/CurrentLocationWeather.vue'
 
 const weatherStore = useWeatherStore()
-const { weatherList, isLoading } = storeToRefs(weatherStore)
+const { weatherList, isLoading, isLocationLoading, lastUpdated } = storeToRefs(weatherStore)
 
 const router = useRouter()
 const route = useRoute()
@@ -28,6 +28,7 @@ const searchQuery = ref('')
 const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
 
 const isEditMode = ref(false)
+const isSearchVisible = ref(false)
 
 const handleDeleteCity = (id) => {
   weatherStore.deleteCity(id)
@@ -38,13 +39,52 @@ const handleMoveCity = (id, direction) => {
   weatherStore.moveCity(id, direction)
 }
 
+// 마지막 갱신 시간 표시 (1분마다 "n분 전" 문구 갱신)
+const nowTick = ref(Date.now())
+let nowTickTimer = null
+
+const lastUpdatedLabel = computed(() => {
+  if (!lastUpdated.value) return '아직 갱신되지 않음'
+
+  const diffMs = nowTick.value - new Date(lastUpdated.value).getTime()
+  const diffMinutes = Math.floor(diffMs / 60000)
+
+  if (diffMinutes < 1) return '방금 갱신됨'
+  if (diffMinutes < 60) return `${diffMinutes}분 전 갱신`
+
+  return `${new Date(lastUpdated.value).toLocaleTimeString('ko-KR', {
+    hour: 'numeric',
+    minute: '2-digit',
+  })} 갱신`
+})
+
+const isRefreshing = computed(() => isLoading.value || isLocationLoading.value)
+
+const handleRefreshAll = async () => {
+  try {
+    await weatherStore.refreshAll()
+    ElMessage.success('날씨 정보를 최신으로 갱신했습니다.')
+  } catch {
+    ElMessage.error('갱신에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+  }
+}
+
 onMounted(async () => {
   if (route.query.search) {
     searchQuery.value = route.query.search
+    isSearchVisible.value = true
   }
   // fetchRealTimeWeather()
 
   await weatherStore.loadInitialCities()
+
+  nowTickTimer = setInterval(() => {
+    nowTick.value = Date.now()
+  }, 30000)
+})
+
+onUnmounted(() => {
+  clearInterval(nowTickTimer)
 })
 
 watch(searchQuery, (newQuery) => {
@@ -105,15 +145,25 @@ const addCityFromDialog = async () => {
 
 <template>
   <div class="dashboard-wrapper">
+    <div class="update-status-bar">
+      <span class="update-status-text">🕒 {{ lastUpdatedLabel }}</span>
+      <button class="btn-refresh" :disabled="isRefreshing" @click="handleRefreshAll">
+        {{ isRefreshing ? '갱신 중...' : '🔄 새로고침' }}
+      </button>
+    </div>
     <CurrentLocationWeather />
-    <BaseDashboardCard>
-      <SearchBar :current-query="searchQuery" @update-query="(val) => (searchQuery = val)" />
-    </BaseDashboardCard>
 
     <BaseDashboardCard>
       <div class="weather-section-header">
         <h3>📍 지역별 날씨 현황</h3>
         <div class="header-actions">
+          <el-button
+            circle
+            :type="isSearchVisible ? 'primary' : 'default'"
+            aria-label="도시 검색"
+            @click="isSearchVisible = !isSearchVisible"
+            >🔍</el-button
+          >
           <template v-if="isEditMode">
             <el-button circle aria-label="도시 추가" @click="isAddDialogVisible = true"
               >➕</el-button
@@ -127,6 +177,11 @@ const addCityFromDialog = async () => {
           >
         </div>
       </div>
+      <SearchBar
+        v-if="isSearchVisible"
+        :current-query="searchQuery"
+        @update-query="(val) => (searchQuery = val)"
+      />
       <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
 
       <WeatherCard
@@ -189,6 +244,35 @@ const addCityFromDialog = async () => {
 </template>
 
 <style scoped>
+.update-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+.update-status-text {
+  font-size: 0.85rem;
+  color: #4b4b4b;
+}
+.btn-refresh {
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #4b6584;
+  background-color: #eef1f4;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.btn-refresh:hover:not(:disabled) {
+  background-color: #dfe4ea;
+}
+.btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .status-bar {
   background: #e8f5e9;
   padding: 10px;

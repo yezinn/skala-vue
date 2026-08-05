@@ -25,6 +25,10 @@ const getStoreCities = () => {
 export const useWeatherStore = defineStore('weather', () => {
   const weatherList = ref(getStoreCities())
   const isLoading = ref(false)
+  const lastUpdated = ref(null)
+  const markUpdated = () => {
+    lastUpdated.value = new Date()
+  }
 
   const saveCities = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(weatherList.value))
@@ -105,6 +109,7 @@ export const useWeatherStore = defineStore('weather', () => {
 
       weatherList.value.push(newCity)
       saveCities()
+      markUpdated()
     } finally {
       isLoading.value = false
     }
@@ -140,6 +145,40 @@ export const useWeatherStore = defineStore('weather', () => {
 
       weatherList.value = initialCities
       saveCities()
+      markUpdated()
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const refreshCityWeather = async (city) => {
+    const response = await axios.get(WEATHER_URL, {
+      params: { lat: city.lat, lon: city.lon, appid: API_KEY, units: 'metric', lang: 'kr' },
+    })
+    const weather = response.data
+
+    return {
+      ...city,
+      temp: weather.main.temp,
+      feelsLike: weather.main.feels_like,
+      humidity: weather.main.humidity,
+      status: weather.weather[0].description,
+      windSpeed: weather.wind.speed,
+    }
+  }
+
+  // 도시 목록 + 현재 위치 날씨를 한 번에 최신 데이터로 갱신
+  const refreshAll = async () => {
+    isLoading.value = true
+    try {
+      const [refreshedCities] = await Promise.all([
+        Promise.all(weatherList.value.map(refreshCityWeather)),
+        loadCurrentLocationWeather(currentCoords.value),
+      ])
+
+      weatherList.value = refreshedCities
+      saveCities()
+      markUpdated()
     } finally {
       isLoading.value = false
     }
@@ -150,6 +189,7 @@ export const useWeatherStore = defineStore('weather', () => {
   const currentLocationWeather = ref(null)
   const hourlyForecast = ref([])
   const isLocationLoading = ref(false)
+  const currentCoords = ref(SEOUL_COORDS)
 
   const requestWeatherByCoords = async (lat, lon) => {
     const [weatherResponse, reverseGeoResponse] = await Promise.all([
@@ -182,7 +222,13 @@ export const useWeatherStore = defineStore('weather', () => {
     })
 
     return response.data.list.map((item) => ({
-      time: item.dt_txt.slice(11, 16), // "HH:MM"
+      dt: item.dt, // 유닉스 타임스탬프(초) - 현재 시간과 가장 가까운 항목 판별용
+      // dt_txt는 UTC 기준이라 그대로 쓰면 로컬 시간과 어긋남 -> 브라우저 로컬 시간대로 변환해서 표시
+      time: new Date(item.dt * 1000).toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }),
       temp: item.main.temp,
       pop: item.pop, // 강수확률 0~1
       status: item.weather[0].description,
@@ -191,6 +237,7 @@ export const useWeatherStore = defineStore('weather', () => {
   }
 
   const loadCurrentLocationWeather = async (coords = SEOUL_COORDS) => {
+    currentCoords.value = coords
     isLocationLoading.value = true
     try {
       const [current, hourly] = await Promise.all([
@@ -199,6 +246,7 @@ export const useWeatherStore = defineStore('weather', () => {
       ])
       currentLocationWeather.value = current
       hourlyForecast.value = hourly
+      markUpdated()
     } finally {
       isLocationLoading.value = false
     }
@@ -206,9 +254,11 @@ export const useWeatherStore = defineStore('weather', () => {
   return {
     weatherList,
     isLoading,
+    lastUpdated,
     addCity,
     deleteCity,
     moveCity,
+    refreshAll,
     loadInitialCities,
     findCityById,
     currentLocationWeather,

@@ -3,8 +3,11 @@
   max-width: 900px;
   margin: 40px 10px 40px 10px;
   padding: 30px 40px;
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.506);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
+  position: relative;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   font-family:
     'Pretendard',
@@ -16,6 +19,12 @@
   color: #2c3e50;
 }
 /* 2. 대주제 (h1) 및 구분선 (hr) 정돈 */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 .app-container h1 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -45,36 +54,53 @@ h1 {
   margin-bottom: 8px;
 }
 
-.navigation-bar {
+/* "날씨" 카드 오른쪽 바깥에 세로로 떠 있는 원형 내비게이션 버튼 */
+.side-nav-rail {
+  position: absolute;
+  top: 24px;
+  right: -64px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+.nav-circle {
+  display: flex;
   align-items: center;
-  background-color: #ffffff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
-}
-.nav-item {
-  text-decoration: none;
-  color: #7f8c8d;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #8f8f8f;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+  font-size: 18px;
   font-weight: bold;
-  font-size: 16px;
-  transition: color 0.2s ease;
+  text-decoration: none;
+  opacity: 0.45;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
-.nav-item:hover {
-  color: #2c3e50;
-}
-.divider {
-  margin: 0 15px;
-  color: #dcdde1;
+.nav-circle:hover {
+  opacity: 0.7;
+  transform: scale(1.06);
 }
 
-/* 🔥 Vue Router가 활성화된 링크 태그에 자동으로 부여하는 클래스 스펙 */
-.navigation-bar .router-link-exact-active {
-  color: #3498db;
-  border-bottom: 2px solid #3498db;
-  padding-bottom: 2px;
+/* 🔥 Vue Router가 활성화된 링크 태그에 자동으로 부여하는 클래스 스펙 - 선택된 버튼만 불투명하게 */
+.nav-circle.router-link-exact-active {
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(202, 202, 203, 0.45);
+}
+
+/* 화면이 좁아 카드 오른쪽에 버튼을 띄울 공간이 없으면 카드 안쪽 상단으로 이동 */
+@media (max-width: 1040px) {
+  .side-nav-rail {
+    position: static;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
 }
 
 /* 과제페이지 스타일 - Component 분리 후 각 페이지별로 이동 */
