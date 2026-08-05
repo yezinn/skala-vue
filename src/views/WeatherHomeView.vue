@@ -8,7 +8,7 @@
 <script setup>
 import {ref, computed, watch, onMounted} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-// import axios from 'axios'
+import {ElMessage} from 'element-plus'
 
 import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
 import SearchBar from '../components/exercise/SearchBar.vue'
@@ -23,53 +23,15 @@ const {weatherList, isLoading} = storeToRefs(weatherStore)
 const router = useRouter()
 const route = useRoute()
 
-// const weatherList = ref([])
 const searchQuery = ref('')
 const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
-// const isLoading = ref(false)
 
-// const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
-// const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
+const isEditMode = ref(false)
 
-// const fetchRealTimeWeather = async () => {
-//     isLoading.value = true
-//     try{
-//         const [seoulRes, busanRes, daeguRes] = await Promise.all([
-//             axios.get(`${BASE_URL}?q=Seoul&appid=${API_KEY}&units=metric&lang=kr`),
-//             axios.get(`${BASE_URL}?q=Busan&appid=${API_KEY}&units=metric&lang=kr`),
-//             axios.get(`${BASE_URL}?q=Daegu&appid=${API_KEY}&units=metric&lang=kr`),
-
-//         ])
-//         weatherList.value = [
-//             {
-//                 id: 'city_01',
-//                 name: '서울',
-//                 searchKeywords: ['seoul'],
-//                 temp: seoulRes.data.main.temp,
-//                 status: seoulRes.data.weather[0].description,
-//             },
-//             {
-//                 id: 'city_02',
-//                 name: '부산',
-//                 searchKeywords: ['busan'],
-//                 temp: busanRes.data.main.temp,
-//                 status: busanRes.data.weather[0].description,
-//             },
-//             {
-//                 id: 'city_03',
-//                 name: '대구',
-//                 searchKeywords: ['daegu', 'taegu'],
-//                 temp: daeguRes.data.main.temp,
-//                 status: daeguRes.data.weather[0].description,
-//             },
-//         ]
-//         console.log('🟢 [API 통신 완료] 메인 대시보드 실시간 기상 장부 동기화:', weatherList.value)
-//     } catch (error){
-//         console.error('‼️날씨 API 연동 실패:', error)
-//     }finally{
-//         isLoading.value = false
-//     }
-// }
+const handleDeleteCity = (id) => {
+    weatherStore.deleteCity(id)
+    ElMessage.success('도시가 삭제되었습니다.')
+}
 
 onMounted(async () => {
     if(route.query.search){
@@ -122,66 +84,18 @@ const selectCity = (city) => {
 }
 
 // 도시 추가 기능
+const isAddDialogVisible = ref(false)
 const newCityQuery = ref('')
 
-// const addCity = async () => {
-//     const cityQuery = newCityQuery.value.trim()
-
-//     if(!cityQuery) return
-
-//     try{
-//         const response = await axios.get(BASE_URL, {
-//             params: {
-//                 q: `${cityQuery},KR`,
-//                 appid: API_KEY,
-//                 units: 'metric',
-//                 lang: 'kr',
-//             },
-//         })
-
-//         const weather = response.data
-//         const normalize = (value) => value.trim().toLowerCase()
-
-//         const isDuplicate = weatherList.value.some((item) => {
-//             const searchableNames = [
-//                 item.name,
-//                 ...(item.searchKeywords ?? []),
-//             ].map(normalize)
-
-//             return (
-//                 searchableNames.includes(normalize(cityQuery)) || 
-//                 searchableNames.includes(normalize(weather.name))
-//             )
-//         })
-
-//         if (isDuplicate) {
-//             window.alert('이미 목록에 있는 도시입니다.')
-//             return
-//         }
-
-//         weatherList.value.push({
-//             id: String(weather.id),
-//             name:weather.name,
-//             searchKeywords: [
-//                 cityQuery.toLowerCase(),
-//                 weather.name.toLowerCase(),
-//             ],
-//             temp: weather.main.temp,
-//             status: weather.weather[0].description
-//         })
-
-//         newCityQuery.value = ''
-//     } catch (error) {
-//         console.error('도시 추가 실패:', error)
-//         window.alert('도시를 찾을 수 없습니다.')
-//     }
-// }
-const addCity = async () => {
-    try{
+const addCityFromDialog = async () => {
+    try {
         await weatherStore.addCity(newCityQuery.value)
+
+        ElMessage.success('도시가 추가되었습니다.')
         newCityQuery.value = ''
-    }catch (error) {
-        window.alert(error.message)
+        isAddDialogVisible.value = false
+    } catch (error) {
+        ElMessage.error(error.message)
     }
 }
 </script>
@@ -193,10 +107,27 @@ const addCity = async () => {
         </BaseDashboardCard>
 
         <BaseDashboardCard>
-            <h3>📍 지역별 날씨 현황</h3>
+            <div class="weather-section-header">
+                <h3>📍 지역별 날씨 현황</h3>
+                <div class="header-actions">
+                    <template v-if="isEditMode">
+                        <el-button circle aria-label="도시 추가" @click="isAddDialogVisible = true">➕</el-button>
+                        <el-button type="danger" circle aria-label="편집 종료" @click="isEditMode = false">✕</el-button>
+                    </template>
+                    <el-button v-else type="primary" circle aria-label="편집" @click="isEditMode = true">✏️</el-button>
+                </div>
+            </div>
             <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
-            
-            <WeatherCard v-for="item in filteredWeatherList" :key="item.id" :city-item="item" @select-card="selectCity" @click-detail="handleDetailJump(item.id)" />
+
+            <WeatherCard 
+                v-for="item in filteredWeatherList" 
+                :key="item.id" 
+                :city-item="item" 
+                :is-edit-mode="isEditMode"
+                @select-card="selectCity" 
+                @click-detail="handleDetailJump(item.id)"
+                @delete-city="handleDeleteCity(item.id)"
+            />
             <p v-if="filteredWeatherList.length === 0" style="text-align: center; color: #e74c3c; padding: 10px">😩 검색 결과와 일치하는 도시가 없습니다.</p>
         </BaseDashboardCard>
     </div>
@@ -204,14 +135,36 @@ const addCity = async () => {
     <div class="status-bar">
         {{ selectedCityInfo }}
     </div>
-    <form @submit.prevent="addCity">
-        <input
-            v-model="newCityQuery"
-            placeholder="추가할 도시명 입력 (예: Incheon)"
-        />
-        <button type="submit">도시 추가</button>
-    </form>
-
+    
+    <el-dialog
+        v-model="isAddDialogVisible"
+        title="도시 추가"
+        width="min(90vw, 420px)"
+        align-center
+        @closed="() => {newCityQuery = ''; isEditMode = false}"
+    >
+        <form @submit.prevent="addCityFromDialog">
+            <el-input 
+                v-model="newCityQuery"
+                placeholder="도시명을 입력하세요. (예: 서울, Seoul, Tokyo)"
+                clearable
+                autofocus
+            />
+        </form>
+        <template #footer>
+            <el-button @click="isAddDialogVisible = false">
+                취소
+            </el-button>
+            <el-button
+                type="primary"
+                :loading="isLoading"
+                :disabled="!newCityQuery.trim()"
+                @click="addCityFromDialog"
+            >
+                도시 추가
+            </el-button>
+        </template>
+    </el-dialog>
 </template>
 
 <style scoped>
@@ -222,5 +175,11 @@ const addCity = async () => {
   color: #2e7d32;
   font-weight: bold;
   border-radius: 6px;
+}
+.weather-section-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
 }
 </style>

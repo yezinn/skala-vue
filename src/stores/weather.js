@@ -110,6 +110,10 @@ export const useWeatherStore = defineStore('weather', () => {
             isLoading.value = false
         }
     }
+    const deleteCity = (id) => {
+        weatherList.value = weatherList.value.filter((item) => item.id !== String(id))
+        saveCities()
+    }
 
     const loadInitialCities = async () => {
         if(weatherList.value.length > 0) return
@@ -138,6 +142,7 @@ export const useWeatherStore = defineStore('weather', () => {
         weatherList,
         isLoading,
         addCity,
+        deleteCity,
         loadInitialCities,
         findCityById,
     }

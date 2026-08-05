@@ -1,41 +1,11 @@
 <script setup>
-// import AxiosWeather from './components/practices/library/AxiosWeather.vue';
-// import WeatherFind from './components/exercise/WeatherFind.vue'
-// import WeatherComposition from './components/exercise/WeatherComposition.vue'
-// import WeatherParent from './components/exercise/WeatherParent.vue'
 import UnitToggler from './components/exercise/UnitToggler.vue';
 </script>
 
 
 <template>
-  <!-- <div class="app-container">
-    <WeatherFind />
-  </div>
   <div class="app-container">
-    <WeatherComposition />
-  </div>
-  <div class="app-container">
-    <h1>🌤️과제 3: 날씨 (Component)</h1>
-    <hr />
-    <WeatherParent />
-  </div>
-  <div class="app-container">
-    <h1>🌤️과제 4: 날씨 (Vue Router)</h1>
-    <hr />
-    <div class="dashboard-wrapper">
-      <nav class="navigation-bar">
-        <RouterLink to="/" class="nav-item">🌤️ 날씨 대시보드</RouterLink>
-        <span class="divider">|</span>
-        <RouterLink to="/about" class="nav-item">ℹ 서비스 소개</RouterLink>
-      </nav>
-      <main>
-        <RouterView />
-      </main>
-    </div>
-  </div> -->
-
-  <div class="app-container">
-    <h1>🌤️ 과제 5: 스토어 적용</h1>
+    <h1>🌤️ 날씨</h1>
     <hr />
     <div class="dashboard-wrapper">
       <nav class="navigation-bar">

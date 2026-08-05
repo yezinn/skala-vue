@@ -11,9 +11,13 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    isEditMode: {
+      type:Boolean,
+      default:false
+    },
 })
 
-const emit = defineEmits(['select-card', 'click-detail'])
+const emit = defineEmits(['select-card', 'click-detail', 'delete-city'])
 
 const configStore = useConfigStore()
 
@@ -37,7 +41,16 @@ const displayTemp = computed(() => {
         <span v-else class="cool">🥶 시원함</span>
         
 
-        <button class="btn-detail" @click.stop="emit('click-detail', cityItem.name, cityItem.status)">상세보기</button>
+        <button 
+          v-if="!isEditMode"
+          class="btn-detail" 
+          @click.stop="emit('click-detail', cityItem.name, cityItem.status)"
+        >상세보기</button>
+        <button
+          v-else
+          class="btn-delete"
+          @click.stop="emit('delete-city',cityItem.id)"
+        >삭제</button>
     </div>
 </template>
 
@@ -73,5 +86,16 @@ const displayTemp = computed(() => {
   top: 15px;
   padding: 6px 10px;
   cursor: pointer;
+}
+.btn-delete {
+  position: absolute;
+  right: 12px;
+  top: 15px;
+  padding: 6px 10px;
+  cursor: pointer;
+  background-color: #ff7675;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
 }
 </style>
