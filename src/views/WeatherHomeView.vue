@@ -39,6 +39,14 @@ const handleMoveCity = (id, direction) => {
   weatherStore.moveCity(id, direction)
 }
 
+const toggleSearch = () => {
+  isSearchVisible.value = !isSearchVisible.value
+  // 검색창을 닫을 때는 검색어도 같이 초기화해서 전체 목록이 다시 보이도록 함
+  if (!isSearchVisible.value) {
+    searchQuery.value = ''
+  }
+}
+
 // 마지막 갱신 시간 표시 (1분마다 "n분 전" 문구 갱신)
 const nowTick = ref(Date.now())
 let nowTickTimer = null
@@ -161,7 +169,7 @@ const addCityFromDialog = async () => {
             circle
             :type="isSearchVisible ? 'primary' : 'default'"
             aria-label="도시 검색"
-            @click="isSearchVisible = !isSearchVisible"
+            @click="toggleSearch"
             >🔍</el-button
           >
           <template v-if="isEditMode">
