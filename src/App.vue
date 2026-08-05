@@ -1,7 +1,6 @@
 <script setup>
-import UnitToggler from './components/exercise/UnitToggler.vue';
+import UnitToggler from './components/exercise/UnitToggler.vue'
 </script>
-
 
 <template>
   <div class="app-container">
@@ -20,7 +19,6 @@ import UnitToggler from './components/exercise/UnitToggler.vue';
     </div>
   </div>
 </template>
-
 
 <style>
 @import '@/assets/exercise.css';

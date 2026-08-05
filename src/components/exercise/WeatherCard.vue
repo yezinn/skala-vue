@@ -3,18 +3,18 @@
     카드를 선택하는 것(select-card 이벤트)과 상세보기(click-detail 이벤트)를 부모에게 전달 (emits) -->
 
 <script setup>
-import {computed} from 'vue'
-import { useConfigStore } from '@/stores/configStore';
+import { computed } from 'vue'
+import { useConfigStore } from '@/stores/configStore'
 
 const props = defineProps({
-    cityItem: {
-        type: Object,
-        required: true,
-    },
-    isEditMode: {
-      type:Boolean,
-      default:false
-    },
+  cityItem: {
+    type: Object,
+    required: true,
+  },
+  isEditMode: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['select-card', 'click-detail', 'delete-city'])
@@ -23,7 +23,7 @@ const configStore = useConfigStore()
 
 const displayTemp = computed(() => {
   const rawTemp = props.cityItem.temp
-  if(configStore.unit === 'fahrenheit') {
+  if (configStore.unit === 'fahrenheit') {
     return Math.round((rawTemp * 9) / 5 + 32)
   }
   return rawTemp
@@ -31,27 +31,24 @@ const displayTemp = computed(() => {
 </script>
 
 <template>
-    <div class="weather-card" @click="emit('select-card', cityItem.name)">    
-        <!-- <h4>{{cityItem.name }}</h4> -->
-        <!-- <p>현재 기온: {{ cityItem.temp }}°C</p> -->
-        <h4>{{ cityItem.name }} ({{ cityItem.status }})</h4>
-        <p>현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }}</p>
-        <span v-if="cityItem.temp >= 25" class="hot">🥵 더움</span>
-        <span v-else-if="cityItem.temp >= 20" class="moderate">😎 선선함</span>
-        <span v-else class="cool">🥶 시원함</span>
-        
+  <div class="weather-card" @click="emit('select-card', cityItem.name)">
+    <!-- <h4>{{cityItem.name }}</h4> -->
+    <!-- <p>현재 기온: {{ cityItem.temp }}°C</p> -->
+    <h4>{{ cityItem.name }} ({{ cityItem.status }})</h4>
+    <p>현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }}</p>
+    <span v-if="cityItem.temp >= 25" class="hot">🥵 더움</span>
+    <span v-else-if="cityItem.temp >= 20" class="moderate">😎 선선함</span>
+    <span v-else class="cool">🥶 시원함</span>
 
-        <button 
-          v-if="!isEditMode"
-          class="btn-detail" 
-          @click.stop="emit('click-detail', cityItem.name, cityItem.status)"
-        >상세보기</button>
-        <button
-          v-else
-          class="btn-delete"
-          @click.stop="emit('delete-city',cityItem.id)"
-        >삭제</button>
-    </div>
+    <button
+      v-if="!isEditMode"
+      class="btn-detail"
+      @click.stop="emit('click-detail', cityItem.name, cityItem.status)"
+    >
+      상세보기
+    </button>
+    <button v-else class="btn-delete" @click.stop="emit('delete-city', cityItem.id)">삭제</button>
+  </div>
 </template>
 
 <style scoped>

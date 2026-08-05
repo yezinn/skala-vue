@@ -2,9 +2,9 @@
 import { ref } from 'vue'
 
 const weatherList = ref([
-  {id: 'city_01', name: '서울', temp:28, status:'맑음'},
-  {id: 'city_02', name: '부산', temp:30, status:'흐림'},
-  {id: 'city_03', name: '대구', temp:24, status:'비'},
+  { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
+  { id: 'city_02', name: '부산', temp: 30, status: '흐림' },
+  { id: 'city_03', name: '대구', temp: 24, status: '비' },
 ])
 
 const searchQuery = ref('')
@@ -15,21 +15,30 @@ const showDetail = (cityName, status) => {
 }
 </script>
 
-
 <template>
   <div class="practice-container">
     <h1>과제 1: 🌤️날씨 (Mockup)</h1>
     <section class="search-box">
       <h3>🔍도시 검색</h3>
-      <input type="text" :value="searchQuery" @input="(e) => (searchQuery = e.target.value)" placeholder="검색할 도시 이름 입력" />
+      <input
+        type="text"
+        :value="searchQuery"
+        @input="(e) => (searchQuery = e.target.value)"
+        placeholder="검색할 도시 이름 입력"
+      />
       <p>
         검색 중인 도시: <strong>{{ searchQuery }}</strong>
-      </p>  
+      </p>
     </section>
 
     <section class="list-box">
-      <h3> 🌍 📍 지역별 날씨 현황</h3>
-      <div v-for="item in weatherList" :key="item.id" class="weather-card" @click="selectedCityInfo = `${item.name}이 선택되었습니다.`">
+      <h3>🌍 📍 지역별 날씨 현황</h3>
+      <div
+        v-for="item in weatherList"
+        :key="item.id"
+        class="weather-card"
+        @click="selectedCityInfo = `${item.name}이 선택되었습니다.`"
+      >
         <h4>{{ item.name }} ({{ item.status }})</h4>
         <p>현재 기온: {{ item.temp }}°C</p>
 
@@ -37,7 +46,9 @@ const showDetail = (cityName, status) => {
         <span v-if="item.temp >= 25" class="hot">🥵 더움</span>
         <span v-else class="cool">😎 선선함</span>
 
-        <button class="btn-detail" @click.stop="showDetail(item.name, item.status)">상세보기</button>
+        <button class="btn-detail" @click.stop="showDetail(item.name, item.status)">
+          상세보기
+        </button>
       </div>
     </section>
 
@@ -45,7 +56,5 @@ const showDetail = (cityName, status) => {
       {{ selectedCityInfo }}
     </div>
     <!-- <hr /> -->
-    
   </div>
 </template>
-

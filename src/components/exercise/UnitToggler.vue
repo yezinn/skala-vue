@@ -1,27 +1,28 @@
 <script setup>
-import {useConfigStore} from '@/stores/configStore.js'
+import { useConfigStore } from '@/stores/configStore.js'
 const configStore = useConfigStore()
-
-
 </script>
 
 <template>
-    <div class="unit-toggle" role="group" aria-label="온도 단위 선택">
-        <button
-            type="button"
-            class="unit-option"
-            :class="{ active: configStore.unit === 'celsius' }"
-            @click="configStore.setUnit('celsius')"
-        >℃</button>
-        <span class="unit-divider">|</span>
-        <button
-            type="button"
-            class="unit-option"
-            :class="{ active: configStore.unit === 'fahrenheit' }"
-            @click="configStore.setUnit('fahrenheit')"
-        >℉</button>
-    </div>
-
+  <div class="unit-toggle" role="group" aria-label="온도 단위 선택">
+    <button
+      type="button"
+      class="unit-option"
+      :class="{ active: configStore.unit === 'celsius' }"
+      @click="configStore.setUnit('celsius')"
+    >
+      ℃
+    </button>
+    <span class="unit-divider">|</span>
+    <button
+      type="button"
+      class="unit-option"
+      :class="{ active: configStore.unit === 'fahrenheit' }"
+      @click="configStore.setUnit('fahrenheit')"
+    >
+      ℉
+    </button>
+  </div>
 </template>
 
 <style scoped>
@@ -43,7 +44,9 @@ const configStore = useConfigStore()
   padding: 6px 16px;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 .unit-option:hover {
   color: #4b6584;

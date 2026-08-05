@@ -1,7 +1,7 @@
 <!-- :cityId 패턴을 수신하는 동적 상세 페이지 -->
 <!-- 지역별 상세 기상관측 정보 보여주기 -->
 <!-- 도시 코드에 해당하는 Mock Data를 임시로 활용 -->
- <!-- Router 동적 경로 매칭에 해당되는 도시ID (cityId)를 기반으로 Mount 시점에 Mock Data에서 도시 객체 선택 -->
+<!-- Router 동적 경로 매칭에 해당되는 도시ID (cityId)를 기반으로 Mount 시점에 Mock Data에서 도시 객체 선택 -->
 
 <script setup>
 import { computed, onMounted } from 'vue'
@@ -16,15 +16,13 @@ const router = useRouter()
 
 const configStore = useConfigStore()
 const weatherStore = useWeatherStore()
-const {isLoading} = storeToRefs(weatherStore)
+const { isLoading } = storeToRefs(weatherStore)
 
 onMounted(() => {
-    weatherStore.loadInitialCities()
+  weatherStore.loadInitialCities()
 })
 
-const cityData = computed(() => 
-    weatherStore.findCityById(route.params.cityId),
-)
+const cityData = computed(() => weatherStore.findCityById(route.params.cityId))
 // const isLoading = ref(false)
 
 const displayTemp = computed(() => {
@@ -36,15 +34,15 @@ const displayTemp = computed(() => {
   return rawTemp // celsius 상태일 땐 원본 반환
 })
 
-const displayFeelsLike = computed( () => {
-    if(!cityData.value) return 0
-    const rawTemp = cityData.value.feelsLike
+const displayFeelsLike = computed(() => {
+  if (!cityData.value) return 0
+  const rawTemp = cityData.value.feelsLike
 
-    if(configStore.unit === 'fahrenheit') {
-        return Math.round((rawTemp * 9) / 5 + 32)
-    }
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32)
+  }
 
-    return rawTemp
+  return rawTemp
 })
 // const cityMapping = {
 //     city_01: { english: 'Seoul', korean: '대한민국 서울특별시' },
@@ -81,34 +79,32 @@ const displayFeelsLike = computed( () => {
 </script>
 
 <template>
-    <div class="detail-container">
-        <h3>📊 지역별 상세 기상 관측 정보</h3>
-        <hr />
+  <div class="detail-container">
+    <h3>📊 지역별 상세 기상 관측 정보</h3>
+    <hr />
 
-        <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
+    <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
 
-        <div v-else-if="cityData" class="info-card">
-            <h4>📍 지정 지역: {{ cityData.name }}</h4>
-            <p>
-                실시간 기온: <strong>{{ displayTemp }}{{ configStore.unitSymbol }}</strong>
-            </p>
-            <p>
-                체감 기온:
-                <strong>{{ displayFeelsLike }}{{ configStore.unitSymbol }}</strong>
-            </p>
-            <p>기상 현황: {{ cityData.status }}</p>
-            <p>대기 습도: {{ cityData.humidity }}</p>
-            <p>현재 풍속: {{ cityData.windSpeed }}</p>
-        </div>
-
-        <div v-else>
-            <p>해당 지역의 상세 데이터 장부가 존재하지 않습니다.</p>
-        </div>
-
-        <button @click="router.push('/')" class="back-btn">
-            🔙 메인 대시보드로 돌아가기
-        </button>
+    <div v-else-if="cityData" class="info-card">
+      <h4>📍 지정 지역: {{ cityData.name }}</h4>
+      <p>
+        실시간 기온: <strong>{{ displayTemp }}{{ configStore.unitSymbol }}</strong>
+      </p>
+      <p>
+        체감 기온:
+        <strong>{{ displayFeelsLike }}{{ configStore.unitSymbol }}</strong>
+      </p>
+      <p>기상 현황: {{ cityData.status }}</p>
+      <p>대기 습도: {{ cityData.humidity }}</p>
+      <p>현재 풍속: {{ cityData.windSpeed }}</p>
     </div>
+
+    <div v-else>
+      <p>해당 지역의 상세 데이터 장부가 존재하지 않습니다.</p>
+    </div>
+
+    <button @click="router.push('/')" class="back-btn">🔙 메인 대시보드로 돌아가기</button>
+  </div>
 </template>
 
 <style scoped>
