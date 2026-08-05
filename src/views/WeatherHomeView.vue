@@ -141,7 +141,7 @@ const addCityFromDialog = async () => {
         title="도시 추가"
         width="min(90vw, 420px)"
         align-center
-        @closed="() => {newCityQuery = ''; isEditMode = false}"
+        @closed="() => {newCityQuery = ''}"
     >
         <form @submit.prevent="addCityFromDialog">
             <el-input 
@@ -181,5 +181,10 @@ const addCityFromDialog = async () => {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 12px;
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 </style>
