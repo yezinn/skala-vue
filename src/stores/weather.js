@@ -114,6 +114,18 @@ export const useWeatherStore = defineStore('weather', () => {
     saveCities()
   }
 
+  const moveCity = (id, direction) => {
+    const list = weatherList.value
+    const index = list.findIndex((item) => item.id === String(id))
+    if (index === -1) return
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1
+    if (targetIndex < 0 || targetIndex >= list.length) return
+
+    ;[list[index], list[targetIndex]] = [list[targetIndex], list[index]]
+    saveCities()
+  }
+
   const loadInitialCities = async () => {
     if (weatherList.value.length > 0) return
 
@@ -196,6 +208,7 @@ export const useWeatherStore = defineStore('weather', () => {
     isLoading,
     addCity,
     deleteCity,
+    moveCity,
     loadInitialCities,
     findCityById,
     currentLocationWeather,

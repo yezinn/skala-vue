@@ -34,6 +34,10 @@ const handleDeleteCity = (id) => {
   ElMessage.success('도시가 삭제되었습니다.')
 }
 
+const handleMoveCity = (id, direction) => {
+  weatherStore.moveCity(id, direction)
+}
+
 onMounted(async () => {
   if (route.query.search) {
     searchQuery.value = route.query.search
@@ -126,13 +130,17 @@ const addCityFromDialog = async () => {
       <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
 
       <WeatherCard
-        v-for="item in filteredWeatherList"
+        v-for="(item, index) in filteredWeatherList"
         :key="item.id"
         :city-item="item"
         :is-edit-mode="isEditMode"
+        :is-first="index === 0"
+        :is-last="index === filteredWeatherList.length - 1"
         @select-card="selectCity"
         @click-detail="handleDetailJump(item.id)"
         @delete-city="handleDeleteCity(item.id)"
+        @move-up="handleMoveCity(item.id, 'up')"
+        @move-down="handleMoveCity(item.id, 'down')"
       />
       <p
         v-if="filteredWeatherList.length === 0"

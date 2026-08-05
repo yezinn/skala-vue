@@ -15,9 +15,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isFirst: {
+    type: Boolean,
+    default: false,
+  },
+  isLast: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['select-card', 'click-detail', 'delete-city'])
+const emit = defineEmits(['select-card', 'click-detail', 'delete-city', 'move-up', 'move-down'])
 
 const configStore = useConfigStore()
 
@@ -47,7 +55,15 @@ const displayTemp = computed(() => {
     >
       상세보기
     </button>
-    <button v-else class="btn-delete" @click.stop="emit('delete-city', cityItem.id)">삭제</button>
+    <div v-else class="card-edit-actions">
+      <button class="btn-move" :disabled="isFirst" @click.stop="emit('move-up', cityItem.id)">
+        ▲
+      </button>
+      <button class="btn-move" :disabled="isLast" @click.stop="emit('move-down', cityItem.id)">
+        ▼
+      </button>
+      <button class="btn-delete" @click.stop="emit('delete-city', cityItem.id)">삭제</button>
+    </div>
   </div>
 </template>
 
@@ -84,10 +100,27 @@ const displayTemp = computed(() => {
   padding: 6px 10px;
   cursor: pointer;
 }
-.btn-delete {
+.card-edit-actions {
   position: absolute;
   right: 12px;
   top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-move {
+  padding: 4px 8px;
+  cursor: pointer;
+  background-color: #f1f2f6;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  line-height: 1;
+}
+.btn-move:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.btn-delete {
   padding: 6px 10px;
   cursor: pointer;
   background-color: #ff7675;
