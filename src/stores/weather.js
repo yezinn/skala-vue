@@ -6,6 +6,9 @@ const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
 const GEO_URL = 'https://api.openweathermap.org/geo/1.0/direct'
 const WEATHER_URL = 'https://api.openweathermap.org/data/2.5/weather'
 const STORAGE_KEY = 'skala-weather-cities'
+const REVERSE_GEO_URL = 'https://api.openweathermap.org/geo/1.0/reverse'
+const FORECAST_URL = 'https://api.openweathermap.org/data/2.5/forecast'
+const SEOUL_COORDS = { lat: 37.5665, lon: 126.978 }
 
 const normalize = (value) => value.trim().toLowerCase()
 
@@ -138,6 +141,62 @@ export const useWeatherStore = defineStore('weather', () => {
     const findCityById = (id) => 
         weatherList.value.find((item) => item.id === String(id))
 
+    const currentLocationWeather = ref(null)
+    const hourlyForecast = ref([])
+    const isLocationLoading = ref(false)
+
+    const requestWeatherByCoords = async (lat, lon) => {
+        const [weatherResponse, reverseGeoResponse] = await Promise.all([
+            axios.get(WEATHER_URL, {
+                params: { lat, lon, appid: API_KEY, units: 'metric', lang: 'kr' },
+            }),
+            axios.get(REVERSE_GEO_URL, {
+                params: { lat, lon, limit: 1, appid: API_KEY },
+            }),
+        ])
+
+        const weather = weatherResponse.data
+        const location = reverseGeoResponse.data[0]
+        const displayName = location?.local_names?.ko ?? location?.name ?? weather.name
+
+        return {
+            name: displayName,
+            temp: weather.main.temp,
+            feelsLike: weather.main.feels_like,
+            humidity: weather.main.humidity,
+            status: weather.weather[0].description,
+            weatherId: weather.weather[0].id,
+            windSpeed: weather.wind.speed,
+        }
+    }
+
+    const requestHourlyForecastByCoords = async (lat, lon) => {
+        const response = await axios.get(FORECAST_URL, {
+            params: { lat, lon, appid: API_KEY, units: 'metric', lang: 'kr', cnt: 8 }, // 3시간 간격 x 8 = 다음 24시간
+        })
+
+        return response.data.list.map((item) => ({
+            time: item.dt_txt.slice(11, 16), // "HH:MM"
+            temp: item.main.temp,
+            pop: item.pop, // 강수확률 0~1
+            status: item.weather[0].description,
+            weatherId: item.weather[0].id,
+        }))
+    }
+
+    const loadCurrentLocationWeather = async (coords = SEOUL_COORDS) => {
+        isLocationLoading.value = true
+        try {
+            const [current, hourly] = await Promise.all([
+                requestWeatherByCoords(coords.lat, coords.lon),
+                requestHourlyForecastByCoords(coords.lat, coords.lon),
+            ])
+            currentLocationWeather.value = current
+            hourlyForecast.value = hourly
+        } finally {
+            isLocationLoading.value = false
+        }
+    }
     return{
         weatherList,
         isLoading,
@@ -145,5 +204,9 @@ export const useWeatherStore = defineStore('weather', () => {
         deleteCity,
         loadInitialCities,
         findCityById,
+        currentLocationWeather,
+        hourlyForecast,
+        isLocationLoading,
+        loadCurrentLocationWeather,
     }
 })

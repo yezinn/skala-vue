@@ -8,14 +8,17 @@
 <script setup>
 import {ref, computed, watch, onMounted} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import {ElMessage} from 'element-plus'
+
+import { useWeatherStore } from '@/stores/weather'
 
 import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
 import SearchBar from '../components/exercise/SearchBar.vue'
 import WeatherCard from '../components/exercise/WeatherCard.vue'
+import CurrentLocationWeather from '@/components/exercise/CurrentLocationWeather.vue'
 
-import { storeToRefs } from 'pinia'
-import { useWeatherStore } from '@/stores/weather'
+
 
 const weatherStore = useWeatherStore()
 const {weatherList, isLoading} = storeToRefs(weatherStore)
@@ -102,6 +105,7 @@ const addCityFromDialog = async () => {
 
 <template>
     <div class="dashboard-wrapper">
+        <CurrentLocationWeather />
         <BaseDashboardCard>
             <SearchBar :current-query="searchQuery" @update-query="(val) => (searchQuery = val)" />
         </BaseDashboardCard>
